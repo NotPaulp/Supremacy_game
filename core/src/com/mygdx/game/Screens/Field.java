@@ -20,6 +20,7 @@ public class Field {
     float g;
     float b;
     float a;
+    String group;
     public void setNumber(int number){
         this.number=number;
         switch (number) {
@@ -36,6 +37,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=427;
                 this.texty=87;
+                this.group="NorthAmerica";
                 break;
             case (1):
                 this.position[0][0]=30;
@@ -50,6 +52,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=201;
                 this.texty=163;
+                this.group="NorthAmerica";
                 break;
             case (2):
                 this.position[0][0]=160;
@@ -64,6 +67,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=230;
                 this.texty=290;
+                this.group="NorthAmerica";
                 break;
             case (3):
                 this.position[0][0]=160;
@@ -78,6 +82,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=227;
                 this.texty=393;
+                this.group="NorthAmerica";
                 break;
             case  (4):
                 this.position[0][0]=250;
@@ -92,6 +97,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=283;
                 this.texty=451;
+                this.group="SouthAmerica";
                 break;
             case (5):
                 this.position[0][0]=250;
@@ -106,6 +112,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=320;
                 this.texty=605;
+                this.group="SouthAmerica";
                 break;
             case (6):
                 this.position[0][0]=360;
@@ -120,6 +127,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=383;
                 this.texty=530;
+                this.group="SouthAmerica";
                 break;
             case (7):
                 this.position[0][0]=490;
@@ -129,11 +137,12 @@ public class Field {
                 this.neighbours[0]=6;
                 this.neighbours[1]=8;
                 this.neighbours[2]=12;
-                this.neighbours[3]=-1;
+                this.neighbours[3]=15;
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
                 this.textx=580;
                 this.texty=490;
+                this.group="Africa";
                 break;
             case  (8):
                 this.position[0][0]=650;
@@ -148,6 +157,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=690;
                 this.texty=570;
+                this.group="Africa";
                 break;
             case (9):
                 this.position[0][0]=610;
@@ -162,6 +172,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=663;
                 this.texty=696;
+                this.group="Africa";
                 break;
             case (10):
                 this.position[0][0]=480;
@@ -176,6 +187,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=516;
                 this.texty=163;
+                this.group="Europe";
                 break;
             case (11):
                 this.position[0][0]=450;
@@ -190,6 +202,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=488;
                 this.texty=267;
+                this.group="Europe";
                 break;
             case  (12):
                 this.position[0][0]=560;
@@ -204,6 +217,7 @@ public class Field {
                 this.neighbours[5]=15;
                 this.textx=667;
                 this.texty=264;
+                this.group="Europe";
                 break;
             case (13):
                 this.position[0][0]=790;
@@ -218,6 +232,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=930;
                 this.texty=180;
+                this.group="Asia";
                 break;
             case (14):
                 this.position[0][0]=770;
@@ -232,6 +247,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=873;
                 this.texty=315;
+                this.group="Asia";
                 break;
             case (15):
                 this.position[0][0]=690;
@@ -242,10 +258,11 @@ public class Field {
                 this.neighbours[1]=12;
                 this.neighbours[2]=14;
                 this.neighbours[3]=16;
-                this.neighbours[4]=-1;
+                this.neighbours[4]=7;
                 this.neighbours[5]=-1;
                 this.textx=735;
                 this.texty=430;
+                this.group="Asia";
                 break;
             case  (16):
                 this.position[0][0]=810;
@@ -260,6 +277,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=873;
                 this.texty=425;
+                this.group="Asia";
                 break;
             case (17):
                 this.position[0][0]=920;
@@ -274,6 +292,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=965;
                 this.texty=580;
+                this.group="Australia";
                 break;
             case (18):
                 this.position[0][0]=1040;
@@ -288,6 +307,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=1088;
                 this.texty=560;
+                this.group="Australia";
                 break;
             case (19):
                 this.position[0][0]=1120;
@@ -302,6 +322,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=1107;
                 this.texty=657;
+                this.group="Australia";
                 break;
             case (20):
                 this.position[0][0]=980;
@@ -316,6 +337,7 @@ public class Field {
                 this.neighbours[5]=-1;
                 this.textx=1035;
                 this.texty=695;
+                this.group="Australia";
                 break;
         }
             this.texty=830-this.texty+12;
@@ -327,21 +349,25 @@ public class Field {
                this.r=1f;
               this.g=0.27f;
               this.b=0.27f;
+
               break;
             case 2:
                this.r=0.27f;
                this.g=0.27f;
                this.b=1f;
+
                break;
             case 3:
                this.r=0.27f;
                this.g=1f;
                this.b=0.27f;
+
                break;
             case 4:
                this.r=0.96f;
                this.g=0.67f;
                this.b=0.2f;
+
                break;
         }
     }

@@ -147,7 +147,7 @@ public class MainMenuScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            if (screenX<600){
+            if (screenX<Gdx.graphics.getWidth()/2){
                 this.n=2;
 
             }else{
