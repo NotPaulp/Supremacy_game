@@ -1,0 +1,19 @@
+
+buttonnext.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+forwardpressed
+  rotate: false
+  xy: 1, 1
+  size: 407, 256
+  orig: 407, 256
+  offset: 0, 0
+  index: -1
+nextunpressed
+  rotate: false
+  xy: 410, 2
+  size: 407, 255
+  orig: 407, 255
+  offset: 0, 0
+  index: -1

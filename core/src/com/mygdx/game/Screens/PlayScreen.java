@@ -2,6 +2,7 @@ package com.mygdx.game.Screens;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -41,21 +43,31 @@ import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Scenes.Hud;
 
 import java.awt.Menu;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.xml.soap.Text;
 
+import jdk.nashorn.internal.ir.Labels;
 
 
 public class PlayScreen implements Screen, InputProcessor, Input.TextInputListener {
-    private static int n =MainMenuScreen.n;
+    private static boolean newgame=MainMenuFirstScreen.newgame;
+    private static int n;
     private TextButton menubtn;
     private MyGdxGame game;
     private Hud hud;
+    private Label.LabelStyle defaultlabelstyle;
+    private Table Amount;
+    private boolean AmountTable;
+    private Label amountlabel;
     private Table buttons;
-    private TextButton info;
+    private BitmapFont amountfont;
+    private TextButton infobtn;;
+    private TextButton menucreatebtn;
     private boolean infodraw;
     private Skin skin;
+    private int amount;
     private boolean possible=false;
     private boolean addcheck=true;
     private TextButton button;
@@ -63,6 +75,10 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     public static int player_win;
     private TextButton btncontinue;
     private TextButton btnmainmenu;
+    private TextButton more;
+    private TextButton less;
+    private TextButton ok;
+    private TextButton cancel;
     private boolean captured;
     private Table menu;
     private Sprite[] borderwhite=new Sprite[6];
@@ -91,17 +107,19 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     GlyphLayout layout;
     Stage stage;
     Slider slider;
-    int from=0;
+    static int   from=0;
+    private Sprite bonus;
     private Sprite allfields;
     public static int max;
     public static BitmapFont font;
     private final TextButton buttonnext;
     private final TextButton.TextButtonStyle buttonnextstyle;
-    private float[][] borderscolor=new float[n+1][3];
+    private float[][] borderscolor;
+    private final Preferences prefs;
     public PlayScreen(MyGdxGame game) {
-        initborderswhite();
-        initborderscolor();
-        initbordersblack();
+
+        prefs = Gdx.app.getPreferences("Continue");
+
         for (int k = 0; k < 21; k++) {
             int i = k / 10;
             int j = k % 10;
@@ -124,63 +142,34 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         maploader = new TmxMapLoader();
         map = maploader.load("map.tmx");
         render = new OrthogonalTiledMapRenderer(map);
-
-
         font = new BitmapFont();
         font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         font.setColor(1, 1, 1, 1);
-        font.getData().setScale(2.5f);
+        font.getData().setScale(3f);
+        amountfont = new BitmapFont();
+        amountfont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        amountfont.setColor(1, 1, 1, 1);
+        amountfont.getData().setScale(10f);
         gamecam.position.set(gamePort.getScreenWidth() / 2, gamePort.getScreenHeight() / 2, 0);
         TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("skin/flat-earth-ui.atlas"));
         stage = new Stage();
-
         skin = new Skin(Gdx.files.internal("skin/flat-earth-ui.json"));
-
-//        Table table = new Table();
-//        table.setFillParent(true);
-//        table.setDebug(true);
-//        stage.addActor(table);
-//        table.setSize(1000,1000);
-//        // temporary until we have asset manager in
-//        Skin skin = new Skin(Gdx.files.internal("skin/flat-earth-ui.json"));
-//        table.setTransform(true);
-//        table.setScale(1f);
-//        table.center();
-//        //create buttons
-//        TextButton newGame = new TextButton("New Game", skin);
-//        TextButton preferences = new TextButton("Preferences", skin);
-//        TextButton exit = new TextButton("Exit", skin);
-//        newGame.setTransform(true);
-//        newGame.setScale(2f);
-//        table.setPosition(Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2,0);
-//        //add buttons to table
-//        table.add(newGame).fillX().uniformX();
-//        table.row().pad(10, 0, 10, 0);
-//        table.add(preferences).fillX().uniformX();
-//        table.row();
-//        table.add(exit).fillX().uniformX();
-//        exit.addListener(new ChangeListener() {
-//            @Override
-//            public void changed(ChangeEvent event, Actor actor) {
-//                Gdx.app.exit();
-//            }
-//        });
-//
-//        newGame.addListener(new ChangeListener() {
-//            @Override
-//            public void changed(ChangeEvent event, Actor actor) {
-//
-//            }
-//        });
         buttonnextstyle = new TextButton.TextButtonStyle();
         buttonnextstyle.font = font;
         buttonnextstyle.fontColor = Color.RED;
         buttonnextstyle.downFontColor = Color.PINK;
 
-
-
+        defaultlabelstyle=new Label.LabelStyle();
+        defaultlabelstyle.font=amountfont;
+        defaultlabelstyle.fontColor=Color.WHITE;
+//                new Color(1f/255,50f/255,32f/255,1);
+        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
+        style.font = font;
+        style.fontColor = Color.CHARTREUSE;
+        bonus=new Sprite(new Texture(Gdx.files.internal("bonus.png")));
 
         buttonnext = new TextButton("REINFORCEMENT", buttonnextstyle);
+
         buttonnext.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
 
 //        buttonnext.setWidth(500f);
@@ -191,51 +180,64 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 next();
-                createmenu();
                 render.render();
             }
         });
         buttons=new Table();
-        TextButton empty=new TextButton("",buttonnextstyle);
-        buttons.setTransform(true);
-        menubtn=new TextButton("=",skin);
-        menubtn.setTransform(true);
-        menubtn.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
-        info=new TextButton("?",skin);
-        menubtn.setTransform(true);
-        menubtn.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
-        buttons.setSize(Gdx.graphics.getWidth()*1f/1.2f,Gdx.graphics.getWidth()*1f/2);
-        buttons.add(info).width(Gdx.graphics.getWidth()*1f/2392*1000).height(Gdx.graphics.getWidth()*1f/2392*200);
-        buttons.row();
-        buttons.add(empty).width(Gdx.graphics.getWidth()*1f/2392*1000).height(Gdx.graphics.getWidth()*1f/2392*200);
-        buttons.row();
-        buttons.add(menubtn).width(Gdx.graphics.getWidth()*1f/2392*1000).height(Gdx.graphics.getWidth()*1f/2392*200);
-        buttons.setPosition(Gdx.graphics.getWidth()*1f/2,Gdx.graphics.getHeight()*1f/2,0);
+        infobtn=new TextButton("?",skin);
+        infobtn.setTransform(true);
+        infobtn.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*3f, Gdx.graphics.getWidth()*1f/2392*3f);
+        menucreatebtn=new TextButton("=",skin);
+        menucreatebtn.setTransform(true);
+        menucreatebtn.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*3f, Gdx.graphics.getWidth()*1f/2392*3f);
+        buttons.setSize(proportion * 600 + indent-buttonnext.getWidth()*2,infobtn.getHeight());
+        buttons.add(infobtn).width(infobtn.getWidth()*Gdx.graphics.getWidth()*1f/2392*2f);
+        buttons.add(menucreatebtn).width(infobtn.getWidth()*Gdx.graphics.getWidth()*1f/2392*2f);
+        buttons.setPosition(proportion * 600 + indent,800*proportion,0);
         buttons.defaults().expandX().fillX();
-        info.addListener(new ChangeListener() {
+        infobtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("info");
+                if (!infodraw)
+                    infodraw=true;
+                else
+                    infodraw=false;
+                render.render();
+
             }
         });
-        menubtn.addListener(new ClickListener() {
+        menucreatebtn.addListener(new ChangeListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void changed(ChangeEvent event, Actor actor) {
                 createmenu();
                 render.render();
             }
         });
+
         stage.addActor(buttons);
-        stage.addActor(menubtn);
-        stage.addActor(info);
         stage.addActor(buttonnext);
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(multiplexer);
+        if (newgame){
+            n=MainMenuScreen.n;
+            hostinit(n);
 
-        hostinit(n);
+        }else{
+
+            initcontinue();
+
+        }
+        borderscolor=new float[n+1][3];
+        initborderswhite();
+        initborderscolor();
+        initbordersblack();
+        lsprite=true;
+        unselectall();
+
+
 
     }
 
@@ -340,11 +342,34 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         }
         if (infodraw){
         game.batch.begin();
-            for (int bb=0;bb<6;bb++)
-                borderblack[bb].draw(game.batch);
-            allfields.setColor(Color.BLACK);
-            allfields.draw(game.batch);
+            border[0].setColor(Color.RED);
+            border[1].setColor(Color.BLUE);
+            border[2].setColor(Color.ORANGE);
+            border[3].setColor(Color.GREEN);
+            border[4].setColor(Color.PURPLE);
+            border[5].setColor(Color.YELLOW);
+            for (int b=0;b<6;b++)
+                border[b].draw(game.batch);
+            for (int k = 0; k < 21; k++) {
+                if (k<4)
+                    this.sprite[k].setColor(1f,105f/255,97f/255,1f);
+                else if (k<7)
+                    this.sprite[k].setColor(97f/255,105f/255,1f,1f);
+                else if (k<10)
+                    this.sprite[k].setColor(1f,0.702f,0.278f,1f);
+                else if (k<13)
+                    this.sprite[k].setColor(137f/255,232f/255,148f/255,1f);
+                else if (k<17)
+                    this.sprite[k].setColor(177f/255,156f/255,217f/255,1f);
+                else
+                    this.sprite[k].setColor(253f/255,253f/255,150f/255,1f);
+
+                this.sprite[k].draw(game.batch);
+
+            }
+        bonus.draw(game.batch);
         game.batch.end();
+
         }
 
 
@@ -397,6 +422,33 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     public boolean keyTyped(char character) {
         return false;
     }
+    public void save(){
+        prefs.clear();
+        prefs.putInteger("active_player",active_player );
+        prefs.putInteger("phase",phase);
+        for (int k=0;k<21;k++) {
+            prefs.putInteger("field"+k+"player",fields[k].player);
+            prefs.putInteger("field"+k+"units",fields[k].units);
+        }
+        prefs.putInteger("max",max);
+        prefs.putInteger("n",n);
+        prefs.flush();
+    }
+    public void initcontinue(){
+
+        active_player=prefs.getInteger("active_player");
+        phase=prefs.getInteger("phase");
+        for (int k=0;k<21;k++) {
+            fields[k].setPlayer(prefs.getInteger("field"+k+"player"));
+            fields[k].addUnits(prefs.getInteger("field"+k+"units"));
+        }
+        max=prefs.getInteger("max");
+        n=prefs.getInteger("n");
+//        back();
+        next();
+        lsprite=true;
+        render.render();
+    }
     public void createmenu(){
         menu=new Table();
         TextButton empty=new TextButton("",buttonnextstyle);
@@ -408,7 +460,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         Sprite background = new Sprite(new Texture(Gdx.files.internal("menubackground.png")));
         TextureRegionDrawable textureRegionDrawableBg = new TextureRegionDrawable(new TextureRegion(background));
         menu.setBackground(textureRegionDrawableBg);
-        btnmainmenu = new TextButton("EXIT", skin);
+        btnmainmenu = new TextButton("MENU", skin);
         btnmainmenu.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
         menu.setSize(Gdx.graphics.getWidth()*1f/1.2f,Gdx.graphics.getWidth()*1f/2);
         menu.add(btncontinue).width(Gdx.graphics.getWidth()*1f/2392*1000).height(Gdx.graphics.getWidth()*1f/2392*200);
@@ -429,7 +481,9 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         btnmainmenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Gdx.app.exit();
+                save();
+                game.setScreen(new MainMenuFirstScreen(game));
+                dispose();
             }
         });
         stage.addActor(menu);
@@ -503,50 +557,121 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
             border[5].setColor(0,0,0,1f);
 
     }
-    public static void move(Field field,int phase,Field from,int min,int max){
+    public void move(final Field field,final Field from,final int min,final int max){
 
-        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
-        style.font = font;
-        style.fontColor = Color.CHARTREUSE;
+//        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
+//        style.font = font;
+//        style.fontColor = Color.CHARTREUSE;
+//
+//        TextField textfield = new TextField("", style);
+//        textfield.setText("Test");
+//        textfield.setWidth(150);
+//        textfield.setTextFieldFilter(new DigitFilter());
+//
+//        MyTextInputListener listener = new MyTextInputListener(field,phase,from,min,max);
+//        Gdx.input.getTextInput(listener, "Выберите количество юнитов для захвата  Min: "+min+"  Max: "+max,""+max , ""+max);
 
-        TextField textfield = new TextField("", style);
-        textfield.setText("Test");
-        textfield.setWidth(150);
-        textfield.setTextFieldFilter(new DigitFilter());
+        AmountTable=true;
+        Amount=new Table();
+        Amount.setTransform(true);
+        TextButton empty=new TextButton("",buttonnextstyle);
+        more = new TextButton("+", skin);
+        more.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        less = new TextButton("-", skin);
+        less.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        ok = new TextButton(amount+"", skin);
+        ok.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        cancel = new TextButton(min+"", skin);
+        cancel.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        Sprite background = new Sprite(new Texture(Gdx.files.internal("menubackground.png")));
+        TextureRegionDrawable textureRegionDrawableBg = new TextureRegionDrawable(new TextureRegion(background));
+        Amount.setBackground(textureRegionDrawableBg);
 
-        MyTextInputListener listener = new MyTextInputListener(field,phase,from,min,max);
-        Gdx.input.getTextInput(listener, "Выберите количество юнитов для захвата  Min: "+min+"  Max: "+max,""+max , ""+max);
+        amountlabel = new Label(amount+"",defaultlabelstyle);
+        Amount.setSize(Gdx.graphics.getWidth()*1f/1.5f,Gdx.graphics.getWidth()*1f/1.6f);
+        Amount.add(empty);
+        Amount.add(more).width(Gdx.graphics.getWidth()*1f/2392*200);
+        Amount.row();
+        Amount.add(empty);
+        Amount.add(amountlabel).height(Gdx.graphics.getWidth()*1f/2392*400);
+        Amount.row();
+        Amount.add(empty);
+        Amount.add(less).width(Gdx.graphics.getWidth()*1f/2392*200);
+        Amount.row();
+        Amount.add(empty).height(Gdx.graphics.getWidth()*1f/2392*100);
+        Amount.row();
+        Amount.add(ok).width(Gdx.graphics.getWidth()*1f/2392*600);
+        Amount.add(empty);
+        Amount.add(cancel).width(Gdx.graphics.getWidth()*1f/2392*600);
+        Amount.setPosition(Gdx.graphics.getWidth()*1f/2,Gdx.graphics.getHeight()*1f/2,0);
+        Amount.defaults().expandX().fillX();
+        more.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (amount==max)
+                    amount=min;
+                else
+                    amount+=1;
+                Amount.remove();
+                move(field,from,min,max);
+
+            }
+
+        });
+        less.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (amount==min)
+                    amount=max;
+                else
+                    amount-=1;
+                Amount.remove();
+                move(field,from,min,max);
+            }
+
+
+        });
+        ok.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                    int m;
+                    if (amount <= max&&amount >=min) {
+                        m=amount;
+                    } else if (amount <= max){
+                        m=max;
+                    }else{
+                        m=min;
+                    }
+                    field.addUnits(m);
+                    from.addUnits(-1*m);
+                AmountTable=false;
+                Amount.remove();
+                render.render();
+                }
+
+
+
+        });
+        cancel.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                field.addUnits(min);
+                from.addUnits(-1*min);
+                AmountTable=false;
+                Amount.remove();
+                render.render();
+            }
+        });
+        stage.addActor(Amount);
         unselectall();
 
     }
     public void win(int player){
-        this.player_win=player;
-        game.setScreen(new WinScreen(game));
+        game.setScreen(new MainMenuFirstScreen(game));
         dispose();
     }
-    public void next(){
-        unselectall();
-        for (int k=0;k<20;k++){
-            if (fields[k].player!=fields[k+1].player)
-                break;
-
-
-            if (k==19)
-                win(fields[k].player);
-
-        }
-        addcheck=true;
-
-        if (phase==3){
-            this.phase=1;
-            if (active_player==n){
-                this.active_player=1;
-            } else{
-                this.active_player+=1;
-            }
-        } else{
-            this.phase+=1;
-        }
+    public void buttonnextinit(){
         switch(phase){
             case (1):
                 buttonnext.setText("REINFORCEMENT");
@@ -577,6 +702,46 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
                 break;
         }
     }
+//    public void back(){
+//        unselectall();
+//        if (phase==1){
+//            this.phase=3;
+//            if (active_player==1){
+//                this.active_player=n;
+//            } else{
+//                this.active_player-=1;
+//            }
+//        } else{
+//            this.phase-=1;
+//        }
+//        buttonnextinit();
+//    }
+    public void next(){
+        infodraw=false;
+        unselectall();
+        for (int k=0;k<20;k++){
+            if (fields[k].player!=fields[k+1].player)
+                break;
+
+
+            if (k==19)
+                win(fields[k].player);
+
+        }
+        addcheck=true;
+
+        if (phase==3){
+            this.phase=1;
+            if (active_player==n){
+                this.active_player=1;
+            } else{
+                this.active_player+=1;
+            }
+        } else{
+            this.phase+=1;
+        }
+       buttonnextinit();
+    }
     public void countadd(){
         int amount=0;
         for (int k = 0; k < 21; k++) {
@@ -602,6 +767,8 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         if (active_player==fields[17].player&&active_player==fields[18].player&&active_player==fields[19].player&&active_player==fields[20].player){
             amount+=4;
         }
+        if (amount<3)
+            amount=3;
         max=amount;
     }
     public void count(Field field){
@@ -610,27 +777,200 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     public static void unselectall(){
         for (int k = 0; k < 21; k++) {fields[k].setSelection("-");}
     }
-    public void createtextfield(Field field){
-        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
-        style.font = font;
-        style.fontColor = Color.CHARTREUSE;
+    public void setamountactors(){
 
-        TextField textfield = new TextField("", style);
 
-        
-        textfield.setTextFieldFilter(new DigitFilter());
-        MyTextInputListener listener = new MyTextInputListener(field,phase,fields[from],0,0);
-        switch(phase) {
-            case 1:
-                Gdx.input.getTextInput(listener, "Выберите количество юнитов для укрепления    Max: " + max, ""+max, "" + max);
-                break;
-            case 2:
-                Gdx.input.getTextInput(listener, "Выберите количество юнитов для атаки    Max: " + max, ""+max, "" + max);
-                break;
-            case 3:
-                Gdx.input.getTextInput(listener, "Выберите количество юнитов для перемещения    Max: " + max, ""+max, "" + max);
-                break;
-        }
+    }
+    public void createamounttable(final Field field,final Field from,final int phase){
+//        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
+//        style.font = font;
+//        style.fontColor = Color.CHARTREUSE;
+//
+//        TextField textfield = new TextField("", style);
+//
+//
+//        textfield.setTextFieldFilter(new DigitFilter());
+//        MyTextInputListener listener = new MyTextInputListener(field,phase,fields[from],0,0);
+//        switch(phase) {
+//            case 1:
+//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для укрепления    Max: " + max, ""+max, "" + max);
+//                break;
+//            case 2:
+//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для атаки    Max: " + max, ""+max, "" + max);
+//                break;
+//            case 3:
+//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для перемещения    Max: " + max, ""+max, "" + max);
+//                break;
+//        }
+
+        AmountTable=true;
+        Amount=new Table();
+        Amount.setTransform(true);
+        TextButton empty=new TextButton("",buttonnextstyle);
+        more = new TextButton("+", skin);
+        more.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        less = new TextButton("-", skin);
+        less.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        ok = new TextButton("OK", skin);
+        ok.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        cancel = new TextButton("CANCEL", skin);
+        cancel.getLabel().setFontScale(Gdx.graphics.getWidth()*1f/2392*5f, Gdx.graphics.getWidth()*1f/2392*5f);
+        Sprite background = new Sprite(new Texture(Gdx.files.internal("menubackground.png")));
+        TextureRegionDrawable textureRegionDrawableBg = new TextureRegionDrawable(new TextureRegion(background));
+        Amount.setBackground(textureRegionDrawableBg);
+
+        amountlabel = new Label(amount+"",defaultlabelstyle);
+        Amount.setSize(Gdx.graphics.getWidth()*1f/1.5f,Gdx.graphics.getWidth()*1f/1.7f);
+        Amount.add(empty);
+        Amount.add(more).width(Gdx.graphics.getWidth()*1f/2392*200);
+        Amount.row();
+        Amount.add(empty);
+        Amount.add(amountlabel).height(Gdx.graphics.getWidth()*1f/2392*400);
+        Amount.row();
+        Amount.add(empty);
+        Amount.add(less).width(Gdx.graphics.getWidth()*1f/2392*200);
+        Amount.row();
+        Amount.add(empty).height(Gdx.graphics.getWidth()*1f/2392*100);
+        Amount.row();
+        Amount.add(ok).width(Gdx.graphics.getWidth()*1f/2392*600);
+        Amount.add(empty);
+        Amount.add(cancel).width(Gdx.graphics.getWidth()*1f/2392*600);
+        Amount.setPosition(Gdx.graphics.getWidth()*1f/2,Gdx.graphics.getHeight()*1f/2,0);
+        Amount.defaults().expandX().fillX();
+        more.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+            if (amount==max)
+                amount=1;
+            else
+                amount+=1;
+            Amount.remove();
+            createamounttable(field,from,phase);
+
+            }
+
+        });
+        less.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (amount==1)
+                    amount=max;
+                else
+                    amount-=1;
+                Amount.remove();
+                createamounttable(field,from,phase);
+            }
+
+
+        });
+        ok.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                boolean  l=true;
+                switch(phase) {
+                    case (1):
+                        if (amount <= PlayScreen.max) {
+                            field.addUnits(amount);
+                            PlayScreen.max -= amount;
+                        } else {
+                            field.addUnits(PlayScreen.max);
+                            PlayScreen.max = 0;
+                        }
+                        if (max==0)
+                            next();
+                        break;
+                    case (2):
+                        int[] attack;
+                        int[] defend;
+                        int au;
+                        boolean breakl=true;
+
+
+                        if (amount <= PlayScreen.max) {
+                            au=amount;
+                        } else {
+                            au=PlayScreen.max;
+                        }
+
+                        while (breakl&&au>0){
+                            if (au>=3){
+                                attack=new int[3];
+                            }else{
+                                attack=new int[au];
+                            }
+                            if (field.units>=2&&au>1){
+                                defend=new int[2];
+                            }else{
+                                defend=new int[1];
+                            }
+                            for (int a=0;a<attack.length;a++){
+
+                                attack[a]=new Random().nextInt(6)+1;
+                            }
+                            Arrays.sort(attack);
+                            for (int d=0;d<defend.length;d++){
+                                defend[d]=new Random().nextInt(6)+1;
+                            }
+                            Arrays.sort(defend);
+                            for (int d=0;d<defend.length;d++){
+                                if (field.units>0) {
+                                    if (attack[attack.length - 1 - d] > defend[defend.length - 1 - d]) {
+                                        field.addUnits(-1);
+                                    }else{
+                                        from.addUnits(-1);
+                                        au-=1;
+                                        if (au==0)
+                                            break;
+                                    }
+                                }
+                                else{
+                                    field.setPlayer(PlayScreen.active_player);
+                                    if (au>3) {
+                                        l=false;
+                                        AmountTable=false;
+                                        Amount.remove();
+                                        render.render();
+                                        amount=au;
+                                        move(field,  from,  3,au);
+                                    }
+                                    else {
+                                        field.addUnits(au);
+                                        from.addUnits(-1*au);
+                                    }
+                                    breakl=false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    case (3):
+                        from.addUnits(-1*amount);
+                        field.addUnits(amount);
+                        next();
+                        break;
+
+                }
+                if (l) {
+                    AmountTable = false;
+                    Amount.remove();
+                    render.render();
+                }
+            }
+
+        });
+        cancel.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+            AmountTable=false;
+            Amount.remove();
+            render.render();
+            }
+        });
+        stage.addActor(Amount);
+
+
+
     }
     public void add(int k){
         fields[k].setSelection("add");
@@ -661,55 +1001,61 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
+    if(!infodraw&&!AmountTable){
         for (int k = 0; k < 21; k++) {
             if ((screenX > fields[k].xstart && screenY > fields[k].ystart) && (screenX < fields[k].xend && screenY < fields[k].yend)) {
-                if (fields[k].player==active_player||fields[k].selected=="attack_threat") {
-                    if (fields[k].player==active_player){
-                    switch (phase) {
-                        case (1):
-                            unselectall();
-                            add(k);
-                            if (addcheck)
-                                countadd();
-                            addcheck=false;
-                            if (max!=0)
-                            createtextfield(fields[k]);
-                            else
-                            next();
-                            break;
-                        case (2):
-                            if (fields[k].units>1) {
-                                attack(k);
-                                from = k;
-                                count(fields[k]);
-                            }
-                            break;
-                        case (3):
-
-                            if (fields[k].selected!="army_regroup_to"&&fields[k].units>1) {
-                                from=k;
-                                count(fields[k]);
-                                possible = false;
-                                regroup(k);
-                                if (possible) {
-                                    fields[k].setSelection("army_regroup_from");
-                                } else {
-                                    fields[k].setSelection("-");
+                if (fields[k].player == active_player || fields[k].selected == "attack_threat") {
+                    if (fields[k].player == active_player) {
+                        switch (phase) {
+                            case (1):
+                                unselectall();
+                                add(k);
+                                if (addcheck)
+                                    countadd();
+                                addcheck = false;
+                                if (max != 0) {
+                                    amount = max;
+                                    createamounttable(fields[k], fields[from],phase);
                                 }
-                                count(fields[k]);
-                            }else if (fields[k].selected=="army_regroup_to"){
-                                if (max==1) {
-                                    fields[k].addUnits(1);
-                                    fields[from].addUnits(-1);
-                                }else
-                                    createtextfield(fields[k]);
-                                next();
-                            }
-                            break;
-                    }}
-                    if (fields[k].selected=="attack_threat") {
-                        createtextfield(fields[k]);
 
+                                break;
+                            case (2):
+                                if (fields[k].units > 1) {
+                                    attack(k);
+                                    from = k;
+                                    count(fields[k]);
+                                }
+                                break;
+                            case (3):
+
+                                if (fields[k].selected!= "army_regroup_to" && fields[k].units > 1) {
+                                    from = k;
+                                    count(fields[k]);
+                                    possible = false;
+                                    regroup(k);
+                                    if (possible) {
+                                        fields[k].setSelection("army_regroup_from");
+                                    } else {
+                                        fields[k].setSelection("-");
+                                    }
+                                    count(fields[k]);
+                                } else if (fields[k].selected.equals("army_regroup_to")) {
+                                    if (max == 1) {
+                                        fields[k].addUnits(1);
+                                        fields[from].addUnits(-1);
+                                    } else{
+                                        amount=max;
+                                        createamounttable(fields[k],fields[from],phase);
+                                    }
+
+
+                                }
+                                break;
+                        }
+                    }
+                    if (fields[k].selected == "attack_threat") {
+                        amount=max;
+                        createamounttable(fields[k],fields[from],phase);
                     }
                     break;
                 }
@@ -722,6 +1068,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         this.lsprite = true;
         this.lmap = false;
         render.render();
+    }
         return false;
     }
 

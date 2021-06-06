@@ -97,7 +97,7 @@ public class MyTextInputListener implements Input.TextInputListener {
                                 if (au>3) {
 
 
-                                    PlayScreen.move(field, 4, from, 3, au);
+                                   // PlayScreen.move(field, 4, from, 3, au);
                                 }
                                 else {
                                     field.addUnits(au);

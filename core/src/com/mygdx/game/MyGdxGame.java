@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.mygdx.game.Screens.MainMenuFirstScreen;
 import com.mygdx.game.Screens.MainMenuScreen;
 import com.mygdx.game.Screens.PlayScreen;
 
@@ -22,7 +23,7 @@ public class MyGdxGame extends Game{
 	public void create () {
 		batch = new SpriteBatch();
 		font = new BitmapFont();
-		this.setScreen(new MainMenuScreen(this));
+		this.setScreen(new MainMenuFirstScreen(this));
 
 
 

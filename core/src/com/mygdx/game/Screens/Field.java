@@ -8,7 +8,7 @@ public class Field {
     int[] neighbours=new int[6];
     int player=0;
     int[][] position=new int[2][2];
-    int units=1;
+    int units=0;
     String selected;
     float xstart;
     float ystart;
@@ -96,7 +96,7 @@ public class Field {
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
                 this.textx=283;
-                this.texty=451;
+                this.texty=444;
                 this.group="SouthAmerica";
                 break;
             case (5):
@@ -200,7 +200,7 @@ public class Field {
                 this.neighbours[3]=-1;
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
-                this.textx=488;
+                this.textx=510;
                 this.texty=267;
                 this.group="Europe";
                 break;
@@ -290,8 +290,8 @@ public class Field {
                 this.neighbours[3]=-1;
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
-                this.textx=965;
-                this.texty=580;
+                this.textx=990;
+                this.texty=570;
                 this.group="Australia";
                 break;
             case (18):
@@ -306,7 +306,7 @@ public class Field {
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
                 this.textx=1088;
-                this.texty=560;
+                this.texty=555;
                 this.group="Australia";
                 break;
             case (19):
@@ -371,8 +371,12 @@ public class Field {
                break;
         }
     }
+
     public void addUnits(int units){
         this.units+=units;
+    }
+    public void removeUnits(int units){
+        this.units-=units;
     }
     public void setSelection(String selected){
         this.selected=selected;
