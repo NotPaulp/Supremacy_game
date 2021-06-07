@@ -106,7 +106,7 @@ public class Field {
                 this.position[1][1]=770;
                 this.neighbours[0]=4;
                 this.neighbours[1]=6;
-                this.neighbours[2]=-1;
+                this.neighbours[2]=19;
                 this.neighbours[3]=-1;
                 this.neighbours[4]=-1;
                 this.neighbours[5]=-1;
