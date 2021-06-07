@@ -1,4 +1,4 @@
-package com.mygdx.game.Screens;
+ package com.mygdx.game.Screens;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
@@ -43,6 +43,17 @@ import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Scenes.Hud;
 
 import java.awt.Menu;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -116,8 +127,10 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     private final TextButton.TextButtonStyle buttonnextstyle;
     private float[][] borderscolor;
     private final Preferences prefs;
-    public PlayScreen(MyGdxGame game) {
 
+    public PlayScreen(MyGdxGame game) {
+        AmountTable=false;
+        infodraw=false;
         prefs = Gdx.app.getPreferences("Continue");
 
         for (int k = 0; k < 21; k++) {
@@ -221,6 +234,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(multiplexer);
+
         if (newgame){
             n=MainMenuScreen.n;
             hostinit(n);
@@ -236,7 +250,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         initbordersblack();
         lsprite=true;
         unselectall();
-
+        render.render();
 
 
     }
@@ -251,14 +265,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
 
     }
 
-    public enum State {
-        PAUSE,
-        RUN,
-        RESUME,
-        STOPPED
-    }
 
-    private State state = State.RUN;
 
 
     @Override
@@ -422,30 +429,65 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
     public boolean keyTyped(char character) {
         return false;
     }
-    public void save(){
-        prefs.clear();
-        prefs.putInteger("active_player",active_player );
-        prefs.putInteger("phase",phase);
-        for (int k=0;k<21;k++) {
-            prefs.putInteger("field"+k+"player",fields[k].player);
-            prefs.putInteger("field"+k+"units",fields[k].units);
+
+    public void save() {
+        try (Writer writer = new BufferedWriter(new FileWriter("A:\\AndroidStudio Projects\\gdx\\android\\assets\\save.txt"))) {
+
+            writer.write(active_player);
+            writer.write("\r\n");
+            writer.write(phase);
+            writer.write("\r\n");
+            for (int k=0;k<21;k++) {
+                writer.write(fields[k].player);
+                writer.write("\r\n");
+                writer.write(fields[k].units);
+                writer.write("\r\n");
+            }
+            writer.write(max);
+            writer.write("\r\n");
+            writer.write(n);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        prefs.putInteger("max",max);
-        prefs.putInteger("n",n);
-        prefs.flush();
+
+
+//        prefs.clear();
+//        prefs.putInteger("active_player",active_player );
+//        prefs.putInteger("phase",phase);
+//        for (int k=0;k<21;k++) {
+//            prefs.putInteger("field"+k+"player",fields[k].player);
+//            prefs.putInteger("field"+k+"units",fields[k].units);
+//        }
+//        prefs.putInteger("max",max);
+//        prefs.putInteger("n",n);
+//        prefs.flush();
     }
     public void initcontinue(){
+        try (BufferedReader reader = new BufferedReader(new FileReader("A:\\AndroidStudio Projects\\gdx\\android\\assets\\save.txt"))) {
 
-        active_player=prefs.getInteger("active_player");
-        phase=prefs.getInteger("phase");
-        for (int k=0;k<21;k++) {
-            fields[k].setPlayer(prefs.getInteger("field"+k+"player"));
-            fields[k].addUnits(prefs.getInteger("field"+k+"units"));
+            active_player=Integer.parseInt(reader.readLine());
+            phase=Integer.parseInt(reader.readLine());
+            for (int k=0;k<21;k++) {
+                fields[k].setPlayer(Integer.parseInt(reader.readLine()));
+                fields[k].addUnits(Integer.parseInt(reader.readLine()));
+            }
+            max=Integer.parseInt(reader.readLine());
+            n=Integer.parseInt(reader.readLine());
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        max=prefs.getInteger("max");
-        n=prefs.getInteger("n");
-//        back();
-        next();
+
+//        active_player=prefs.getInteger("active_player");
+//        phase=prefs.getInteger("phase");
+//        for (int k=0;k<21;k++) {
+//            fields[k].setPlayer(prefs.getInteger("field"+k+"player"));
+//            fields[k].addUnits(prefs.getInteger("field"+k+"units"));
+//        }
+//        max=prefs.getInteger("max");
+//        n=prefs.getInteger("n");
+        buttonnextinit();
         lsprite=true;
         render.render();
     }
@@ -481,7 +523,9 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
         btnmainmenu.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                save();
+
+                    save();
+
                 game.setScreen(new MainMenuFirstScreen(game));
                 dispose();
             }
@@ -558,18 +602,6 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
 
     }
     public void move(final Field field,final Field from,final int min,final int max){
-
-//        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
-//        style.font = font;
-//        style.fontColor = Color.CHARTREUSE;
-//
-//        TextField textfield = new TextField("", style);
-//        textfield.setText("Test");
-//        textfield.setWidth(150);
-//        textfield.setTextFieldFilter(new DigitFilter());
-//
-//        MyTextInputListener listener = new MyTextInputListener(field,phase,from,min,max);
-//        Gdx.input.getTextInput(listener, "Выберите количество юнитов для захвата  Min: "+min+"  Max: "+max,""+max , ""+max);
 
         AmountTable=true;
         Amount=new Table();
@@ -702,20 +734,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
                 break;
         }
     }
-//    public void back(){
-//        unselectall();
-//        if (phase==1){
-//            this.phase=3;
-//            if (active_player==1){
-//                this.active_player=n;
-//            } else{
-//                this.active_player-=1;
-//            }
-//        } else{
-//            this.phase-=1;
-//        }
-//        buttonnextinit();
-//    }
+
     public void next(){
         infodraw=false;
         unselectall();
@@ -782,26 +801,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
 
     }
     public void createamounttable(final Field field,final Field from,final int phase){
-//        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
-//        style.font = font;
-//        style.fontColor = Color.CHARTREUSE;
-//
-//        TextField textfield = new TextField("", style);
-//
-//
-//        textfield.setTextFieldFilter(new DigitFilter());
-//        MyTextInputListener listener = new MyTextInputListener(field,phase,fields[from],0,0);
-//        switch(phase) {
-//            case 1:
-//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для укрепления    Max: " + max, ""+max, "" + max);
-//                break;
-//            case 2:
-//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для атаки    Max: " + max, ""+max, "" + max);
-//                break;
-//            case 3:
-//                Gdx.input.getTextInput(listener, "Выберите количество юнитов для перемещения    Max: " + max, ""+max, "" + max);
-//                break;
-//        }
+
 
         AmountTable=true;
         Amount=new Table();
@@ -936,13 +936,14 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
                                     else {
                                         field.addUnits(au);
                                         from.addUnits(-1*au);
+
                                     }
                                     breakl=false;
                                     break;
                                 }
                             }
                         }
-
+                        unselectall();
                         break;
                     case (3):
                         from.addUnits(-1*amount);
@@ -964,6 +965,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
             public void changed(ChangeEvent event, Actor actor) {
             AmountTable=false;
             Amount.remove();
+            unselectall();
             render.render();
             }
         });
@@ -1013,7 +1015,11 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
                                 if (addcheck)
                                     countadd();
                                 addcheck = false;
-                                if (max != 0) {
+                                if (max==1){
+                                    fields[k].addUnits(1);
+                                    max-=1;
+                                }
+                                else if(max != 0) {
                                     amount = max;
                                     createamounttable(fields[k], fields[from],phase);
                                 }
@@ -1043,6 +1049,8 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
                                     if (max == 1) {
                                         fields[k].addUnits(1);
                                         fields[from].addUnits(-1);
+                                        max-=1;
+                                        next();
                                     } else{
                                         amount=max;
                                         createamounttable(fields[k],fields[from],phase);
@@ -1080,10 +1088,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-//        float x = Gdx.input.getDeltaX();
-//        float y = Gdx.input.getDeltaY();
-//
-//        gamecam.translate(-x, y);
+
         return true;
     }
 
@@ -1095,9 +1100,7 @@ public class PlayScreen implements Screen, InputProcessor, Input.TextInputListen
 
     @Override
     public boolean scrolled(float amountX, float amountY) {
-//        if (gamecam.zoom - 0 >= -0.25f && gamecam.zoom - 100 <= 2) {
-//            gamecam.zoom -= (float) 0.2 / 10f;
-//        }
+
         return true;
     }
 
